@@ -1,0 +1,372 @@
+1)Find all vaccinations administered in the BASILICATA region (uso una filter perche non mi interessa lo score)
+
+GET /12/_search  
+{
+  "query":
+  {
+    "bool":
+    {
+      "filter": 
+      {
+        "term": 
+        {
+          "area": "BAS"
+        }
+      }
+    }
+  }
+} 
+-------------------------
+2)Find all the days in which more than a thousand first doses of the same type of vaccine have been given to people between the ages of 80 and 89, and where there should be some previous infections
+
+GET /12/_search 
+{
+  "query": 
+  {
+    "bool": 
+    {
+      "must": 
+      {
+        "range": 
+        {
+          "prima_dose": 
+          {
+            "gte":1000
+          }
+        }
+      },
+      "must_not": 
+      {
+        "term": 
+        {
+          "fascia_anagrafica" : "80-89"
+        }
+      },
+      "should": 
+      {
+        "range": 
+        {
+          "pregressa_infezione" : 
+          {
+            "gte":0
+            
+          }
+        }
+      }
+    }
+  }
+}
+
+-------------------------
+3) Find all days in which more than ten thousand first doses of the same type of vaccine have been given to people in LOMBARDIA,but hte y type must be different from Pfizer/BioNTech
+
+GET /12/_search 
+{
+  "query": 
+  {
+    "bool": 
+    {
+      "must": 
+      {
+        "range": 
+        {
+          "prima_dose": 
+          {
+            "gte":10000
+          }
+        }
+      },
+      "must_not": 
+      {
+        "term": 
+        {
+          "fornitore" : "Pfizer/BioNTech"
+        }
+      },
+    
+      "filter": 
+      {
+        "term": 
+        {
+          "area": "LOM"
+        }
+      }
+    }
+  }
+}         
+  
+-------------------------
+4)Find the total number of vaccinations administered for each region subdivided for age group
+
+GET /12/_search 
+{
+  "size":0,
+  
+  "aggs": 
+  {
+    "region": 
+    {
+      "terms": 
+      {
+        "field": "area"
+      },
+      "aggs": 
+      {
+        "age": 
+        {
+          "terms": 
+          {
+            "field": "fascia_anagrafica"
+          },
+          "aggs": 
+          {
+            "dosi": 
+            {
+              "sum":
+              {
+                "script" : 
+                {
+                  "lang": "painless",
+                  "source": "doc['prima_dose'].value + doc['seconda_dose'].value + doc['dose_addizionale_booster'].value"
+                } 
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----------------
+5)Find the total number of vaccinations administered in Italy
+GET /12/_search 
+{
+  "size":0,
+  "aggs": 
+  {
+    "dosi": 
+    {
+      "sum":
+      {
+        "script": 
+        {
+          "lang": "painless",
+          "source": "doc['prima_dose'].value + doc['seconda_dose'].value + doc['dose_addizionale_booster'].value"
+        }
+      }
+    }
+  }
+}
+--------------
+6)Find the top 3 months in which more vaccines were administered
+
+GET /12/_search 
+{
+  "size": 0,
+  "aggs": 
+  {
+    "sales_per_month": 
+    {
+      "date_histogram": 
+      {
+        "field": "@timestamp",
+        "calendar_interval": "month"
+      },
+      "aggs": 
+      {
+        "doses": 
+        {
+          "sum":
+          {
+            "script": 
+            {
+              "lang": "painless",
+              "source": "doc['prima_dose'].value + doc['seconda_dose'].value + doc['dose_addizionale_booster'].value"
+            }
+          }
+        },
+        "top_3_months": 
+        {
+          "bucket_sort": 
+          {
+            "sort": 
+            [
+              {
+                "doses": 
+                {
+                "order": "desc" 
+                } 
+              } 
+            ],
+            "size": 3                               
+          }
+        }
+      }
+    }
+  }
+}------------------------------
+7)Find the region with less 3rd doses
+GET /12/_search 
+{
+  "size": 0,
+  "aggs": 
+  {
+    "region": 
+    {
+      "terms": 
+      {
+        "field": "nome_area"
+      },
+      "aggs": 
+      {
+        "doses": 
+        {
+          "sum":
+          {
+            "field": "dose_addizionale_booster"
+          }
+        },
+        "top_3_months": 
+        {
+          "bucket_sort": 
+          {
+            "sort": 
+            [
+              { 
+                "doses": 
+                {
+                  "order": "asc" 
+                } 
+              }
+            ],
+            "size": 1                               
+          }
+        }
+      }
+    }
+  }
+}
+---------------------------------
+8)Find the number of vaccinations administered for each type of vaccine
+GET /12/_search 
+{
+  "size":0,
+  "aggs": {
+    "vaccine": 
+    {
+      "terms": 
+      {
+        "field": "fornitore"
+      },
+      "aggs": 
+      {
+        "dosi": 
+        {
+          "sum":
+          {
+            "script" : 
+            {
+              "lang": "painless",
+              "source": "doc['prima_dose'].value + doc['seconda_dose'].value + doc['dose_addizionale_booster'].value"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+-------
+9)Rate of vaccinated people with the first dose of moderna (people with first dose of Moderna over total sum of first dose)
+**la prima aggregation e' utilizzata per potere unire il conteggio del totale delle dosi con quello delle dosi di moderna per poi essere divisi
+GET /12/_search 
+{
+  "size": 0,
+  "aggs": {
+    "all": {
+      "terms": {
+        "script": "1"   
+      },
+      "aggs": 
+      {
+        "doses": 
+        {
+          "sum": 
+          {
+             "field": "prima_dose"
+          }
+        },
+        "moderna": 
+        {
+          "sum": 
+          {
+             "script" : 
+             {
+                "lang": "painless",
+                "source": "if (doc['fornitore'].value=='Moderna') return doc['prima_dose'].value; else return 0;"
+            }
+          }
+        },
+        "rate": 
+        {
+          "bucket_script": 
+          {
+            "buckets_path": 
+            {
+              "my_var1": "moderna",
+              "my_var2": "doses"
+            },
+            "script": "params.my_var1 / params.my_var2"
+          }
+        }
+      }
+    }
+  }
+}
+------
+10)Rate of people,older than 90+ years,that received a 3rd dose over the people,older than 90+ years, that received the 2nd dose divided by region 
+GET /12/_search 
+{
+  "query": {
+    "bool": {
+      "filter": {
+        "term": {
+          "fascia_anagrafica": "90+"
+        }
+      }
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "region": {
+      "terms": {
+        "field": "nome_area",
+	"size":24
+      },
+      "aggs": {
+        "2nd_doses": {
+          "sum": {
+             "field": "seconda_dose"
+          }
+        },
+        "3rd_doses": {
+         "sum": {
+             "field": "dose_addizionale_booster"
+          }
+        },
+        "rate": {
+          "bucket_script": {
+            "buckets_path": {
+              "my_var1": "3rd_doses",
+              "my_var2": "2nd_doses"
+            },
+            "script": "params.my_var1 / params.my_var2"
+          }
+        }
+      }
+    }}}             
+  
+
+
+
+
