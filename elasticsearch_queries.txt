@@ -58,7 +58,7 @@ GET /12/_search
 }
 
 -------------------------
-3) Find all days in which more than ten thousand first doses of the same type of vaccine have been given to people in LOMBARDIA,but hte y type must be different from Pfizer/BioNTech
+3) Find all days in which more than ten thousand first doses of the same type of vaccine have been given to people in LOMBARDIA,but the vaccine's type must be different from Pfizer/BioNTech
 
 GET /12/_search 
 {
@@ -96,7 +96,7 @@ GET /12/_search
 }         
   
 -------------------------
-4)Find the total number of vaccinations administered for each region subdivided for age group
+4)Find the total number of vaccinations administered for each region subdivided by age group
 
 GET /12/_search 
 {
@@ -327,36 +327,51 @@ GET /12/_search
 10)Rate of people,older than 90+ years,that received a 3rd dose over the people,older than 90+ years, that received the 2nd dose divided by region 
 GET /12/_search 
 {
-  "query": {
-    "bool": {
-      "filter": {
-        "term": {
+  "query": 
+  {
+    "bool": 
+    {
+      "filter": 
+      {
+        "term": 
+        {
           "fascia_anagrafica": "90+"
         }
       }
     }
   },
   "size": 0,
-  "aggs": {
-    "region": {
-      "terms": {
+  "aggs": 
+  {
+    "region": 
+    {
+      "terms": 
+      {
         "field": "nome_area",
-	"size":24
+	       "size":24
       },
-      "aggs": {
-        "2nd_doses": {
-          "sum": {
+      "aggs": 
+      {
+        "2nd_doses": 
+        {
+          "sum": 
+          {
              "field": "seconda_dose"
           }
         },
-        "3rd_doses": {
-         "sum": {
-             "field": "dose_addizionale_booster"
+        "3rd_doses": 
+        {
+         "sum": 
+         {
+            "field": "dose_addizionale_booster"
           }
         },
-        "rate": {
-          "bucket_script": {
-            "buckets_path": {
+        "rate": 
+        {
+          "bucket_script": 
+          {
+            "buckets_path": 
+            {
               "my_var1": "3rd_doses",
               "my_var2": "2nd_doses"
             },
@@ -364,9 +379,6 @@ GET /12/_search
           }
         }
       }
-    }}}             
-  
-
-
-
-
+    }
+  }
+} 
