@@ -1,0 +1,73 @@
+1) Command to delete the data that are not related to the last 6 months.
+
+POST /vaccine_administrations/_delete_by_query
+{
+  "query": {
+    "bool": {
+      "must": {
+        "range": {
+          "administration_date": {
+            "lte": "now-6M/M"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+2) Command to update the number of doses that have been administered
+during the current date.
+
+POST /vaccine_administrations/_update_by_query
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "administration_date": "now"
+          }
+        }
+      ]
+    }
+  },
+  "script": {
+    "source": "ctx._source.male_count++;ctx._source.first_doses++",
+    "lang": "painless"
+  }
+}
+
+
+3) Command to add a possible interesting field named "post_dose_infections"
+To store the number of positive people after the vaccine.
+
+POST /vaccine_administrations/_update_by_query
+{
+  "script" : "ctx._source.post_dose_infections = 0"
+}
+
+
+4) Command to add a field representing the total amount of the administered doses in the 
+current date.
+
+POST /vaccine_administrations/_update_by_query
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "administration_date": "now"
+          }
+        }
+      ]
+    }
+  },
+  "script": {
+    "source": "ctx._source.total_doses = ctx._source.first_doses + 
+               ctx._source.second_doses + ctx._source.booster_doses",
+    "lang": "painless"
+  }
+} 
+

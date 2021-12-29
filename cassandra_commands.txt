@@ -1,0 +1,31 @@
+use toDate(now()) to build the current date.
+
+Creation of a keyspaces with its parameters.
+CREATE keyspace vaccines_management WITH 
+       replication = {'SimpleStrategy', 'replication_factor': 3};
+
+
+Creation of a table containing all the data related to the vaccinations 
+divided by region, age group.
+CREATE TABLE vaccinations (administration_date date, 
+			   supplier varchar, 
+			   area varchar,
+			   age_group varchar,
+			   male_count varint,
+			   female_count varint, 
+			   first_doses varint,
+			   second_doses varint,
+		           post_infection_doses varint, 
+			   booster_doses varint,
+                           NUTS1_code varchar, 
+                           NUTS2_code varchar, 
+                           region_ISTAT_code varint, 
+                           region_name text,  
+                           PRIMARY KEY(administration_date, age_group, area, supplier));
+
+Import of the local data to populate the table.
+COPY vaccinations (administration_date, supplier, area, age_group, male_count, 
+	           female_count, first_doses, second_doses, post_infection_doses, 
+		   booster_doses, NUTS1_code, NUTS2_code, region_ISTAT_code, region_name) 
+FROM 'C:\Users\Dell\Downloads\somministrazioni-vaccini-latest.csv' 
+WITH DELIMITER=',' AND HEADER=TRUE;
