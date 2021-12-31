@@ -5,7 +5,7 @@ Administration_Date,Supplier,Area,Age_Group,Male_Count,Female_Count,First_Doses,
 
 1)Find all vaccinations administered in the BASILICATA region (uso una filter perche non mi interessa lo score)
 
-GET /12/_search  
+GET /index/_search  
 {
   "query":
   {
