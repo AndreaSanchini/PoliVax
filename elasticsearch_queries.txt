@@ -1,3 +1,8 @@
+/******/
+I used this names for the fields:
+Administration_Date,Supplier,Area,Age_Group,Male_Count,Female_Count,First_Doses,Second_Doses,Post_Infection_Doses,Booster_Doses,NUTS1_Code,NUTS2_Code,Region_ISTAT_Code,Region_Name
+/******/
+
 1)Find all vaccinations administered in the BASILICATA region (uso una filter perche non mi interessa lo score)
 
 GET /12/_search  
@@ -10,57 +15,79 @@ GET /12/_search
       {
         "term": 
         {
-          "area": "BAS"
+          "Area": "BAS"
         }
       }
     }
   }
 } 
 -------------------------
-2)Find all the days in which more than a thousand first doses of the same type of vaccine have been given to people between the ages of 80 and 89, and where there should be some previous infections
-
-GET /12/_search 
+2)Find all the entries in which more than a thousand first doses of the same type of vaccine have been given to people between the ages of 80 and 89, and where there should be some previous infections
+GET /index/_search 
 {
   "query": 
   {
     "bool": 
     {
       "must": 
-      {
-        "range": 
-        {
-          "prima_dose": 
-          {
-            "gte":1000
-          }
-        }
-      },
-      "must_not": 
-      {
+      { 
         "term": 
         {
-          "fascia_anagrafica" : "80-89"
+          "Age_Group": "80-89"
         }
       },
       "should": 
       {
         "range": 
         {
-          "pregressa_infezione" : 
+          "Post_Infection_Doses": 
           {
-            "gte":0
-            
+            "gte": 0
           }
-        }
+        }   
       }
     }
   }
 }
 
--------------------------
-3) Find all days in which more than ten thousand first doses of the same type of vaccine have been given to people in LOMBARDIA,but the vaccine's type must be different from Pfizer/BioNTech
+3)Find all the vaccinations for people younger than 60 years 
 
-GET /12/_search 
+GET /index/_search 
+{
+  "query": 
+  {
+    "bool": 
+    {
+      "must_not": 
+      [
+        { "term": 
+        {
+          "Age_Group": "90+"
+        }
+      },
+      { "term": 
+        {
+          "Age_Group" : "80-89"
+        }
+      },
+       { "term": 
+        {
+          "Age_Group" : "70-79"
+        }
+      },
+       { "term": 
+        {
+          "Age_Group" : "60-69"
+        }
+      }
+      ]
+    }
+  }
+}
+-------------------------
+4) Find all entries in which more than ten thousand first doses of the same type of vaccine have been given to people in LOMBARDIA,but the vaccine type must be different from Pfizer/BioNTech
+
+GET /index/_search 
 {
   "query": 
   {
@@ -70,7 +97,7 @@ GET /12/_search
       {
         "range": 
         {
-          "prima_dose": 
+          "First_Doses": 
           {
             "gte":10000
           }
@@ -80,7 +107,7 @@ GET /12/_search
       {
         "term": 
         {
-          "fornitore" : "Pfizer/BioNTech"
+          "Supplier" : "Pfizer/BioNTech"
         }
       },
     
@@ -88,17 +115,16 @@ GET /12/_search
       {
         "term": 
         {
-          "area": "LOM"
+          "Area": "LOM"
         }
       }
     }
   }
-}         
-  
+}
 -------------------------
-4)Find the total number of vaccinations administered for each region subdivided by age group
+5)Find the total number of vaccinations administered for each region subdivided for age group
 
-GET /12/_search 
+GET /index/_search 
 {
   "size":0,
   
@@ -108,7 +134,7 @@ GET /12/_search
     {
       "terms": 
       {
-        "field": "area"
+        "field": "Area"
       },
       "aggs": 
       {
@@ -116,18 +142,18 @@ GET /12/_search
         {
           "terms": 
           {
-            "field": "fascia_anagrafica"
+            "field": "Age_Group"
           },
           "aggs": 
           {
-            "dosi": 
+            "doses": 
             {
               "sum":
               {
                 "script" : 
                 {
                   "lang": "painless",
-                  "source": "doc['prima_dose'].value + doc['seconda_dose'].value + doc['dose_addizionale_booster'].value"
+                  "source": "doc['First_Doses'].value + doc['Second_Doses'].value + doc['Booster_Doses'].value"
                 } 
               }
             }
@@ -138,8 +164,8 @@ GET /12/_search
   }
 }
 ----------------
-5)Find the total number of vaccinations administered in Italy
-GET /12/_search 
+6)Find the total number of vaccinations administered in Italy
+GET /index/_search 
 {
   "size":0,
   "aggs": 
@@ -151,25 +177,24 @@ GET /12/_search
         "script": 
         {
           "lang": "painless",
-          "source": "doc['prima_dose'].value + doc['seconda_dose'].value + doc['dose_addizionale_booster'].value"
+          "source": "doc['First_Doses'].value + doc['Second_Doses'].value + doc['Booster_Doses'].value"
         }
       }
     }
   }
 }
 --------------
-6)Find the top 3 months in which more vaccines were administered
-
-GET /12/_search 
+7)Find the top 3 months in which more vaccines were administered
+GET /index/_search 
 {
   "size": 0,
   "aggs": 
   {
-    "sales_per_month": 
+    "vaccines_per_month": 
     {
       "date_histogram": 
       {
-        "field": "@timestamp",
+        "field": "Administration_Date",
         "calendar_interval": "month"
       },
       "aggs": 
@@ -181,7 +206,7 @@ GET /12/_search
             "script": 
             {
               "lang": "painless",
-              "source": "doc['prima_dose'].value + doc['seconda_dose'].value + doc['dose_addizionale_booster'].value"
+              "source": "doc['First_Doses'].value + doc['Second_Doses'].value + doc['Booster_Doses'].value"
             }
           }
         },
@@ -204,9 +229,10 @@ GET /12/_search
       }
     }
   }
-}------------------------------
-7)Find the region with less 3rd doses
-GET /12/_search 
+}
+------------------------------
+8)Find the region with less 3rd doses
+GET /index/_search 
 {
   "size": 0,
   "aggs": 
@@ -215,7 +241,7 @@ GET /12/_search
     {
       "terms": 
       {
-        "field": "nome_area"
+        "field": "Region_Name"
       },
       "aggs": 
       {
@@ -223,7 +249,7 @@ GET /12/_search
         {
           "sum":
           {
-            "field": "dose_addizionale_booster"
+            "field": "Booster_Doses"
           }
         },
         "top_3_months": 
@@ -247,8 +273,8 @@ GET /12/_search
   }
 }
 ---------------------------------
-8)Find the number of vaccinations administered for each type of vaccine
-GET /12/_search 
+9)Find the number of vaccinations administered for each type of vaccine
+GET /index/_search 
 {
   "size":0,
   "aggs": {
@@ -256,7 +282,7 @@ GET /12/_search
     {
       "terms": 
       {
-        "field": "fornitore"
+        "field": "Supplier"
       },
       "aggs": 
       {
@@ -267,7 +293,7 @@ GET /12/_search
             "script" : 
             {
               "lang": "painless",
-              "source": "doc['prima_dose'].value + doc['seconda_dose'].value + doc['dose_addizionale_booster'].value"
+              "source": "doc['First_Doses'].value + doc['Second_Doses'].value + doc['Booster_Doses'].value"
             }
           }
         }
@@ -275,48 +301,43 @@ GET /12/_search
     }
   }
 }
-
 -------
-9)Rate of vaccinated people with the first dose of moderna (people with first dose of Moderna over total sum of first dose)
-**la prima aggregation e' utilizzata per potere unire il conteggio del totale delle dosi con quello delle dosi di moderna per poi essere divisi
-GET /12/_search 
-{
+10)Rate of vaccinated people with the first dose of moderna (people with first dose of Moderna over total sum of first doses)
+GET /index/_search  
+  {
   "size": 0,
   "aggs": {
     "all": {
       "terms": {
-        "script": "1"   
+        "script": "1"
       },
-      "aggs": 
-      {
-        "doses": 
-        {
-          "sum": 
-          {
-             "field": "prima_dose"
+      "aggs": {
+        "total_doses": {
+          "sum": {
+            "field": "First_Doses"
           }
         },
-        "moderna": 
-        {
-          "sum": 
-          {
-             "script" : 
-             {
-                "lang": "painless",
-                "source": "if (doc['fornitore'].value=='Moderna') return doc['prima_dose'].value; else return 0;"
+        "Moderna": {
+          "filter": {
+            "term": {
+              "Supplier": "Moderna"
+            }
+          },
+          "aggs": {
+            "doses": {
+              "sum": {
+                "field": "First_Doses"
+              }
             }
           }
         },
-        "rate": 
-        {
-          "bucket_script": 
-          {
-            "buckets_path": 
-            {
-              "my_var1": "moderna",
-              "my_var2": "doses"
+        "percentage": {
+          "bucket_script": {
+            "buckets_path": {
+              "Mod": "Moderna>doses",
+              "Tot": "total_doses"
             },
-            "script": "params.my_var1 / params.my_var2"
+            "script": "params.Mod / params.Tot * 100"
           }
         }
       }
@@ -324,8 +345,8 @@ GET /12/_search
   }
 }
 ------
-10)Rate of people,older than 90+ years,that received a 3rd dose over the people,older than 90+ years, that received the 2nd dose divided by region 
-GET /12/_search 
+11)Rate of people,older than 90+ years,that received a 3rd dose over the people,older than 90+ years, that received the 2nd dose divided by region 
+GET /index/_search 
 {
   "query": 
   {
@@ -335,7 +356,7 @@ GET /12/_search
       {
         "term": 
         {
-          "fascia_anagrafica": "90+"
+          "Age_Group": "90+"
         }
       }
     }
@@ -347,8 +368,8 @@ GET /12/_search
     {
       "terms": 
       {
-        "field": "nome_area",
-	       "size":24
+        "field": "Region_Name",
+      	"size":24
       },
       "aggs": 
       {
@@ -356,14 +377,14 @@ GET /12/_search
         {
           "sum": 
           {
-             "field": "seconda_dose"
+             "field": "Second_Doses"
           }
         },
         "3rd_doses": 
         {
          "sum": 
          {
-            "field": "dose_addizionale_booster"
+            "field": "Booster_Doses"
           }
         },
         "rate": 
@@ -381,4 +402,78 @@ GET /12/_search
       }
     }
   }
+}
+12)Rate of people vaccinated with previous infections over people vaccinated with at least 1 dose divided for each region
+
+GET /index/_search 
+{
+  "size": 0,
+  "aggs": 
+  {
+    "region": 
+    {
+      "terms": 
+      {
+        "field": "Region_Name",
+      	"size":24
+      },
+      "aggs": 
+      {
+        "1st_doses": 
+        {
+          "sum": 
+          {
+             "field": "First_Doses"
+          }
+        },
+        "inf": 
+        {
+         "sum": 
+         {
+            "field": "Post_Infection_Doses"
+          }
+        },
+        "rate": 
+        {
+          "bucket_script": 
+          {
+            "buckets_path": 
+            {
+              "my_var1": "inf",
+              "my_var2": "1st_doses"
+            },
+            "script": "params.my_var1 / params.my_var2*100"
+          }
+        }
+      }
+    }
+  }
 } 
+
+13)Percentage of total doses divided by age
+
+GET /index/_search 
+{
+  "size": 0,
+  "aggs": {
+    "age": {
+      "terms": {
+        "field": "Age_Group"
+      },
+      "aggs": {
+        "doses": {
+          "sum": {
+            "field": "First_Doses"
+          }
+        },
+        "percent_of_total_doses": {
+          "normalize": {
+            "buckets_path": "doses",          
+            "method": "percent_of_sum",       
+            "format": "00.00%"                
+          }
+        }
+      }
+    }
+  }
+}
