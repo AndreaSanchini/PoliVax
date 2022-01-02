@@ -92,7 +92,7 @@ GET /index/_search
   }
 }
 -------------------------
-4) Find all entries in which more than ten thousand first doses of the same type of vaccine have been given to people in LOMBARDIA,but the vaccine type must be different from Pfizer/BioNTech
+4) Find all days in which more than ten thousand first doses of the same type of vaccine have been given to people in LOMBARDIA,but the vaccine type must be different from Pfizer/BioNTech
 
 GET /index/_search 
 {
@@ -500,3 +500,35 @@ GET /index/_search
     }  
   }  
 } 
+14)Find alla days in which more than 400000 have been administered
+GET /index/_search 
+{
+  "size": 0,
+  "aggs": 
+  {
+    "first_doses_per_day": 
+    {
+      "date_histogram": 
+      {
+        "field": "Administration_Date",
+        "calendar_interval": "day"
+      },
+      "aggs": 
+      {
+        "doses": 
+        {
+          "sum":
+          {
+            "field":"First_Doses"
+          }
+        },
+        "gte400000":{
+        "bucket_selector": {
+        "buckets_path": {
+        "my_var2": "doses"
+         },
+          "script": " params.my_var2>400000"
+        }
+      }
+    }
+}}}
