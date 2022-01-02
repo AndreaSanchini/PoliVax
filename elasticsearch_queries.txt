@@ -500,7 +500,7 @@ GET /index/_search
     }  
   }  
 } 
-14)Find alla days in which more than 400000 have been administered
+14)Find alla days in which more than 400000 first doses have been administered
 GET /index/_search 
 {
   "size": 0,
