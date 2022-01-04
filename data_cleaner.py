@@ -16,5 +16,6 @@ data = data[data['Region'].isin(['AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE',
                                  'HU', 'IE', 'IS', 'IT', 'LI', 'LT', 'LU', 'LV', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO',
                                  'SE', 'SI', 'SK'])]
 data['ReportingCountry'] = data['ReportingCountry'].replace({'EL': 'GR'})
+data = data.drop(['FirstDoseRefused'], axis=1)
 
 data.to_csv('data/eu_vaccinations_cleaned.csv')
