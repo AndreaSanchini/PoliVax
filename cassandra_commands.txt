@@ -11,12 +11,12 @@ CREATE TABLE vaccinations (administration_date date,
 			   supplier varchar, 
 			   area varchar,
 			   age_group varchar,
-			   male_count varint,
-			   female_count varint, 
-			   first_doses varint,
-			   second_doses varint,
+			   male_count counter,
+			   female_count counter, 
+			   first_doses counter,
+			   second_doses counter,
 		           post_infection_doses varint, 
-			   booster_doses varint,
+			   booster_doses counter,
                            NUTS1_code varchar, 
                            NUTS2_code varchar, 
                            region_ISTAT_code varint, 
@@ -29,3 +29,13 @@ COPY vaccinations (administration_date, supplier, area, age_group, male_count,
 		   booster_doses, NUTS1_code, NUTS2_code, region_ISTAT_code, region_name) 
 FROM 'C:\Users\Dell\Downloads\somministrazioni-vaccini-latest.csv' 
 WITH DELIMITER=',' AND HEADER=TRUE;
+
+Update of the number of the first doses. 
+UPDATE vaccinations
+SET first_doses = first_doses + 1
+WHERE administration_date = '2021-12-29' and age_group = '20-29'
+      and area = 'LOM' and supplier = 'Pfizer/BioNTech';
+
+
+
+

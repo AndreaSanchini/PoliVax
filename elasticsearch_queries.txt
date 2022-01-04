@@ -30,12 +30,19 @@ GET /index/_search
     "bool": 
     {
       "must": 
-      { 
-        "term": 
+      [
+        {"term": 
         {
           "Age_Group": "80-89"
+        }},
+        {"range":
+        {
+        "First_Doses":
+        {
+        "gte":1000
         }
-      },
+        }}
+      ],
       "should": 
       {
         "range": 
@@ -85,7 +92,7 @@ GET /index/_search
   }
 }
 -------------------------
-4) Find all entries in which more than ten thousand first doses of the same type of vaccine have been given to people in LOMBARDIA,but the vaccine type must be different from Pfizer/BioNTech
+4) Find all days in which more than ten thousand first doses of the same type of vaccine have been given to people in LOMBARDIA,but the vaccine type must be different from Pfizer/BioNTech
 
 GET /index/_search 
 {
@@ -369,7 +376,7 @@ GET /index/_search
       "terms": 
       {
         "field": "Region_Name",
-      	"size":24
+      	"size":20
       },
       "aggs": 
       {
@@ -396,14 +403,14 @@ GET /index/_search
               "my_var1": "3rd_doses",
               "my_var2": "2nd_doses"
             },
-            "script": "params.my_var1 / params.my_var2"
+            "script": "params.my_var1 / params.my_var2*100"
           }
         }
       }
     }
   }
 }
-12)Rate of people vaccinated with previous infections over people vaccinated with at least 1 dose divided for each region
+12)Rate of people vaccinated with previous infections over total number of vaccinations divided for each region
 
 GET /index/_search 
 {
@@ -415,15 +422,19 @@ GET /index/_search
       "terms": 
       {
         "field": "Region_Name",
-      	"size":24
+      	"size":20
       },
       "aggs": 
       {
-        "1st_doses": 
+        "tot_doses": 
         {
           "sum": 
           {
-             "field": "First_Doses"
+             "script" : 
+            {
+              "lang": "painless",
+              "source": "doc['First_Doses'].value + doc['Second_Doses'].value + doc['Booster_Doses'].value"
+            }
           }
         },
         "inf": 
@@ -440,7 +451,7 @@ GET /index/_search
             "buckets_path": 
             {
               "my_var1": "inf",
-              "my_var2": "1st_doses"
+              "my_var2": "tot_doses"
             },
             "script": "params.my_var1 / params.my_var2*100"
           }
@@ -453,27 +464,71 @@ GET /index/_search
 13)Percentage of total doses divided by age
 
 GET /index/_search 
+{  
+  "size": 0,  
+  "aggs":  
+  {  
+    "age":  
+    { 
+      "terms":  
+      {  
+        "field": "Age_Group"  
+      },  
+      "aggs":   
+      {  
+        "doses":  
+        {  
+          "sum":  
+          {  
+            "script" :  
+            { 
+              "lang": "painless", 
+              "source": "doc['First_Doses'].value + doc['Second_Doses'].value                + doc['Booster_Doses'].value" 
+            } 
+          }   
+        },  
+        "percent_of_total_doses":  
+        {  
+          "normalize":  
+          {  
+            "buckets_path": "doses",  
+            "method": "percent_of_sum",  
+            "format": "00.00%"  
+          }  
+        }  
+      }  
+    }  
+  }  
+} 
+14)Find alla days in which more than 400000 first doses have been administered
+GET /index/_search 
 {
   "size": 0,
-  "aggs": {
-    "age": {
-      "terms": {
-        "field": "Age_Group"
+  "aggs": 
+  {
+    "first_doses_per_day": 
+    {
+      "date_histogram": 
+      {
+        "field": "Administration_Date",
+        "calendar_interval": "day"
       },
-      "aggs": {
-        "doses": {
-          "sum": {
-            "field": "First_Doses"
+      "aggs": 
+      {
+        "doses": 
+        {
+          "sum":
+          {
+            "field":"First_Doses"
           }
         },
-        "percent_of_total_doses": {
-          "normalize": {
-            "buckets_path": "doses",          
-            "method": "percent_of_sum",       
-            "format": "00.00%"                
-          }
+        "gte400000":{
+        "bucket_selector": {
+        "buckets_path": {
+        "my_var2": "doses"
+         },
+          "script": " params.my_var2>400000"
         }
       }
     }
-  }
-}
+}}}
