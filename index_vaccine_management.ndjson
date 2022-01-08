@@ -1,2 +1,0 @@
-{"attributes":{"fieldAttrs":"{}","fields":"[]","runtimeFieldMap":"{}","timeFieldName":"@timestamp","title":"vaccine_management","typeMeta":"{}"},"coreMigrationVersion":"7.16.2","id":"c0841450-6e3b-11ec-b7cf-c36441dd322e","migrationVersion":{"index-pattern":"7.11.0"},"references":[],"sort":[1641396345372,2678],"type":"index-pattern","updated_at":"2022-01-05T15:25:45.372Z","version":"WzU5OTcsMV0="}
-{"excludedObjects":[],"excludedObjectsCount":0,"exportedCount":1,"missingRefCount":0,"missingReferences":[]}

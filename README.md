@@ -33,7 +33,7 @@ change
   Name the index <code>vaccinations_europe</code> and start the importing process.
 ## Group Components
 
-| Cognome    | Nome       | e-mail                             | Matricola | Codice Persona |
+| Surname    | Name       | E-mail                             | Matricola | Codice Persona |
 |------------|------------|------------------------------------|-----------|----------------|
 | Musumeci   | Margherita | margherita.musumeci@mail.polimi.it | 991549    | 10600069       |
 | Nunziante  | Matteo     | matteo.nunziante@mail.polimi.it    | 992518    | 10670132       |
