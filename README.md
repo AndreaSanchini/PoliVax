@@ -9,6 +9,7 @@
 
 You can find the datasets in the <code>data</code> folder. Please follow the steps below to generate the elasticsearch
 indexes:
+- from kibana homepage, select <code>somministrazioni_vaccini_latest.csv</code> and start the guided procedure. Press 'import' and name the index <code>italy_vaccine_management</code>
 - from kibana homepage, select <code>owid_covid_data_cleaned.csv</code> and start the guided procedure. Override the
 analysis settings, change 'column1' name to 'index' and set 'number of lines to sample' to 10'000 so that all fields 
 can be correctly mapped. Once the analysis is complete, press 'import' and move to the next page. Name the index <code>owid_covid_data</code>
