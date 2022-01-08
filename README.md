@@ -11,7 +11,7 @@ You can find the datasets in the <code>data</code> folder. Please follow the ste
 indexes:
 - from kibana homepage, select <code>owid_covid_data_cleaned.csv</code> and start the guided procedure. Override the
 analysis settings, change 'column1' name to 'index' and set 'number of lines to sample' to 10'000 so that all fields 
-can be correctly mapped. Once the anaylsis is complete, press 'import' and move to the next page. Name the index <code>owid_covid_data</code>
+can be correctly mapped. Once the analysis is complete, press 'import' and move to the next page. Name the index <code>owid_covid_data</code>
 and start the importing process.
 - from kibana homepage, select <code>eu_vaccinations_cleaned.csv</code> and start the guided procedure. Override the
 analysis settings, change 'column1' name to 'RecordNumber' and press 'import' to move to the next page. Select 'Advanced' and 
@@ -30,7 +30,7 @@ change
           "format": "weekyear_week"
         },
     ```
-  Name the index <code>vacciations_europe</code> and start the importing process.
+  Name the index <code>vaccinations_europe</code> and start the importing process.
 ## Group Components
 
 | Cognome    | Nome       | e-mail                             | Matricola | Codice Persona |
