@@ -2,8 +2,35 @@
 
 ## Index
 
+- Datasets
 - Group components
 
+## Datasets
+
+You can find the datasets in the <code>data</code> folder. Please follow the steps below to generate the elasticsearch
+indexes:
+- from kibana homepage, select <code>owid_covid_data_cleaned.csv</code> and start the guided procedure. Override the
+analysis settings, change 'column1' name to 'index' and set 'number of lines to sample' to 10'000 so that all fields 
+can be correctly mapped. Once the anaylsis is complete, press 'import' and move to the next page. Name the index <code>owid_covid_data</code>
+and start the importing process.
+- from kibana homepage, select <code>eu_vaccinations_cleaned.csv</code> and start the guided procedure. Override the
+analysis settings, change 'column1' name to 'RecordNumber' and press 'import' to move to the next page. Select 'Advanced' and 
+modify the mapping as follows:
+<br/><br/>
+change
+    ```sh
+         "YearWeekISO": {
+          "type": "keyword"
+        },
+    ```
+    to
+    ```sh
+         "YearWeekISO": {
+          "type": "date",
+          "format": "weekyear_week"
+        },
+    ```
+  Name the index <code>vacciations_europe</code> and start the importing process.
 ## Group Components
 
 | Cognome    | Nome       | e-mail                             | Matricola | Codice Persona |
