@@ -30,12 +30,6 @@ COPY vaccinations (administration_date, supplier, area, age_group, male_count,
 FROM 'C:\Users\Dell\Downloads\somministrazioni-vaccini-latest.csv' 
 WITH DELIMITER=',' AND HEADER=TRUE;
 
-Update of the number of the first doses. 
-UPDATE vaccinations
-SET first_doses = first_doses + 1
-WHERE administration_date = '2021-12-29' and age_group = '20-29'
-      and area = 'LOM' and supplier = 'Pfizer/BioNTech';
-
 
 
 
